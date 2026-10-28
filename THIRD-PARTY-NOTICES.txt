@@ -1,0 +1,7 @@
+Inaara uses one thing made by others:
+
+Fredoka font (assets/fonts/Fredoka.ttf)
+  Copyright 2016 The Fredoka Project Authors
+  Licensed under the SIL Open Font License, Version 1.1 (assets/fonts/OFL.txt)
+
+Everything else (pictures, music, sounds and code) is drawn or made by the game's own code.

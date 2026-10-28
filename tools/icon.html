@@ -1,0 +1,39 @@
+<!doctype html>
+<meta charset="utf-8">
+<canvas id="c"></canvas>
+<script type="module">
+  // Draws the app icon: Inaara's face in a gold ring on marigold, with jasmine. Used by make-icons.mjs.
+  import { loadFaces, FACES } from '../src/hero.js';
+  import { jasmine } from '../src/art.js';
+  import { rgrad } from '../src/gfx.js';
+  const q = new URLSearchParams(location.search), size = Number(q.get('size')) || 512, mask = q.get('mask') === '1';
+  await loadFaces('../assets/faces/');
+  const c = document.getElementById('c');
+  c.width = c.height = size;
+  const ctx = c.getContext('2d');
+  ctx.scale(size / 512, size / 512);
+  ctx.fillStyle = rgrad(ctx, 256, 200, 20, 420, [[0, '#ffd36a'], [0.6, '#ff9f1c'], [1, '#c85a10']]);
+  if (mask) ctx.fillRect(0, 0, 512, 512);
+  else {
+    ctx.beginPath();
+    ctx.roundRect(0, 0, 512, 512, 112);
+    ctx.fill();
+  }
+  const r = mask ? 150 : 190, img = FACES.portrait;
+  ctx.save();
+  ctx.beginPath();
+  ctx.arc(256, 266, r, 0, Math.PI * 2);
+  ctx.fillStyle = '#fff1d6';
+  ctx.fill();
+  ctx.clip();
+  const w = r * 2.43;
+  ctx.drawImage(img, 256 - w / 2, 266 - r, w, w * img.height / img.width);
+  ctx.restore();
+  ctx.lineWidth = r * 0.09;
+  ctx.strokeStyle = '#fff3c4';
+  ctx.beginPath();
+  ctx.arc(256, 266, r, 0, Math.PI * 2);
+  ctx.stroke();
+  jasmine(ctx, 256 + r * 0.8, 266 - r * 0.85, r / 60, 0);
+  document.title = 'done';
+</script>

@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+  <title>Inaara: a Kerala adventure</title>
+  <meta name="description" content="Run, jump, spin and glide through Kerala with Inaara. A free game that plays in your browser, on a computer or a phone.">
+  <meta name="theme-color" content="#1a0d06">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Inaara">
+  <meta property="og:title" content="Inaara: a Kerala adventure">
+  <meta property="og:description" content="Run, jump, spin and glide through Kerala with Inaara.">
+  <meta property="og:image" content="assets/icons/icon-512.png">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="assets/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
+  <style>
+    @font-face {
+      font-family: Fredoka;
+      src: url(assets/fonts/Fredoka.ttf) format('truetype');
+      font-weight: 300 700;
+      font-display: block;
+    }
+    html, body {
+      margin: 0;
+      height: 100%;
+      background: #120a06;
+      overflow: hidden;
+      overscroll-behavior: none;
+    }
+    canvas {
+      display: block;
+      position: fixed;
+      inset: 0;
+      width: 100vw;
+      height: 100vh;
+      height: 100dvh;
+      touch-action: none;
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-tap-highlight-color: transparent;
+      outline: none;
+    }
+    noscript {
+      color: #fff6dc;
+      font: 20px sans-serif;
+      display: block;
+      padding: 40px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="game" tabindex="0" aria-label="Inaara game"></canvas>
+  <noscript>Inaara needs JavaScript switched on to play.</noscript>
+  <script type="module" src="src/main.js"></script>
+</body>
+</html>
