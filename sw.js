@@ -1,6 +1,6 @@
 // Keeps the game on the device so it opens without the internet after the first visit.
 // It answers from the saved copy straight away and fetches any newer copy for next time.
-const VERSION = '1.0.0';
+const VERSION = '1.0.1';
 const CACHE = 'inaara-' + VERSION;
 const FILES = [
   './',

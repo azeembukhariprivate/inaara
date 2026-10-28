@@ -195,18 +195,42 @@ export function drawInaara(ctx, x, y, s, pose, face = 'happy', facing = 1, opts 
   ctx.restore();
 }
 
-/** Her face in a gold ring (the lives counter and menus). */
+// How far down each face picture has something in it (worked out once per picture).
+const seenCache = new Map();
+function visibleHeight(img) {
+  if (seenCache.has(img)) return seenCache.get(img);
+  let h = img.height;
+  try {
+    const c = document.createElement('canvas');
+    c.width = img.width;
+    c.height = img.height;
+    const g = c.getContext('2d');
+    g.drawImage(img, 0, 0);
+    const a = g.getImageData(0, 0, img.width, img.height).data;
+    rows: for (let yy = img.height - 1; yy >= 0; yy--) {
+      for (let xx = 0; xx < img.width; xx++) if (a[(yy * img.width + xx) * 4 + 3] > 10) break rows;
+      h = yy;
+    }
+  } catch {
+    // Can't read the picture: use all of it.
+  }
+  seenCache.set(img, h);
+  return h;
+}
+
+/** Her whole face in a gold ring (the lives counter and menus). */
 export function faceBadge(ctx, x, y, r, face = 'happy') {
   const img = FACES['head-' + face];
   ctx.save();
   ctx.beginPath();
   ctx.arc(x, y, r, 0, Math.PI * 2);
-  ctx.fillStyle = '#2a1a10';
+  ctx.fillStyle = '#fff1d6';
   ctx.fill();
   if (img) {
+    // The whole head fits inside the ring (the bottom of each picture is see-through, so it's left out).
     ctx.clip();
-    const w = r * 2.7;
-    ctx.drawImage(img, x - w / 2, y - r * 1.15, w, w * img.height / img.width);
+    const seen = visibleHeight(img), k = (r * 1.9) / Math.max(seen, img.width);
+    ctx.drawImage(img, x - img.width * k / 2, y - seen * k / 2, img.width * k, img.height * k);
   }
   ctx.restore();
   ctx.strokeStyle = '#ffe08a';
