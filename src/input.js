@@ -112,12 +112,16 @@ export class Input {
     this.held = now;
   }
 
-  /** The buttons Inaara reacts to. Pressed buttons count once only. */
+  /**
+   * The buttons Inaara reacts to. Pressed buttons count once only. On a keyboard ▲ (or W) jumps too, as the signs
+   * say; on a game controller up on the stick doesn't, so leaning on it doesn't make her jump.
+   */
   game(first) {
+    const upJumps = this.lastDevice === 'keyboard';
     return {
       left: this.held.left, right: this.held.right, up: this.held.up, down: this.held.down,
-      jump: this.held.jump,
-      jumpPressed: first && this.pressed.jump,
+      jump: this.held.jump || (upJumps && this.keys.has('up')),
+      jumpPressed: first && (this.pressed.jump || (upJumps && this.pressed.up && this.keys.has('up'))),
       spinPressed: first && this.pressed.spin
     };
   }

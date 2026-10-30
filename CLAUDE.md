@@ -27,7 +27,9 @@ Part of the KUDU family of free, open-source (MIT) apps by Azeem Bukhari.
 - Game rules: `physics.js` (the `MOVE` numbers), `player.js` (her moves), `play.js` (a level being played),
   `entities.js` (jasmine, lotuses, pots, lamps, creatures, the Monkey Chief). Creatures are never hurt, only bonked.
 - Levels are built in `levels.js`. `tests/reach.mjs` plays her real moves from every place she can stand: every level
-  must be finishable and every lotus and jasmine reachable. Change a level, run the tests.
+  must be finishable and every lotus and jasmine reachable. It plays as a careful player, not a perfect one (`CAREFUL`:
+  lower jumps, a narrow ledge grab, a pause before wall jumps), so nothing needs pixel-perfect timing; keep it that way.
+  Change a level, run the tests.
 - Screens and menus: `game.js`; start-up, screen fitting and the test hook (`?test`): `main.js`.
 - Plays offline: `sw.js` lists every file, and its `VERSION` must match `package.json` (a test checks both).
 - Progress and settings are kept in the browser (`save.js`, key `inaara-save-v1`).

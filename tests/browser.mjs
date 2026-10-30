@@ -69,6 +69,19 @@ try {
     assert.ok(x > 400, `she moved right (x = ${x})`);
   });
 
+  await step('the up arrow jumps too, as the signs say', async () => {
+    await wait(600); // back on the ground
+    const groundY = await pc.evaluate(() => inaara.game.play.player.y);
+    await pc.keyboard.down('ArrowUp');
+    let top = groundY;
+    for (let i = 0; i < 8; i++) {
+      await wait(40);
+      top = Math.min(top, await pc.evaluate(() => inaara.game.play.player.y));
+    }
+    await pc.keyboard.up('ArrowUp');
+    assert.ok(groundY - top > 48, `she jumped with the up arrow (rose ${groundY - top} pixels)`);
+  });
+
   await step('pause and carry on', async () => {
     await pc.keyboard.press('Escape');
     await wait(300);

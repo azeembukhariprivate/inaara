@@ -149,8 +149,9 @@ function backwaters() {
   b.sign(134, 11, 'Grab ledges, then ▲ to climb', 'Jump at a ledge to grab it, JUMP to climb');
   b.ground(137, 141, 7, TILE.ROCK);
   b.jasmineRow(137, 141, 6);
-  // A shaft to wall-jump up for a lotus.
-  b.rock(145, 2, 145, 11).rock(149, 4, 149, 11);
+  // A shaft to wall-jump up for a lotus. The way on is over its first wall: from the top of the tall wall, a leap to
+  // catch its top (four tiles up, so ordinary jumps make it, not only perfect ones).
+  b.rock(145, 3, 145, 11).rock(149, 4, 149, 11);
   b.sign(143, 11, 'Jump off walls', 'Jump off walls: JUMP while sliding');
   b.float('lotus', 147, 1, { id: 2 });
   b.jasmineRow(146, 148, 4);

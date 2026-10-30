@@ -26,6 +26,7 @@ export class Player {
     this.dashTime = 0;
     this.hangDir = 0;
     this.hangCooldown = 0;
+    this.hangHold = 0;
     this.climbTime = 0;
     this.climbTo = null;
     this.invuln = 0;
@@ -78,9 +79,11 @@ export class Player {
       this.vx = 0;
       this.vy = 0;
       const d = this.hangDir;
+      // Holding towards the wall for a moment climbs up too (easier on a phone, and for small hands).
+      this.hangHold = move === d ? this.hangHold + dt : 0;
       if (input.jumpPressed && move === -d) {
         this.wallJump(-d);
-      } else if (input.jumpPressed || input.up) {
+      } else if (input.jumpPressed || input.up || this.hangHold >= MOVE.autoClimb) {
         // Climb up onto the ledge if there's room.
         const tx = Math.floor((this.x + d * (this.w / 2 + 2)) / T), ty = Math.round(this.y - this.h + 6) / T;
         const row = Math.round(ty);
@@ -186,8 +189,8 @@ export class Player {
     if (this.onGround && !wasGround && this.prevY < this.y + 0.01 && this.vy === 0) this.events.push('land');
     this.afterMove(dt, level);
 
-    // Grabbing a ledge while falling past it.
-    if (!this.onGround && this.vy >= 0 && move !== 0 && this.hangCooldown <= 0 && this.state === 'normal') this.tryHang(move, level);
+    // Grabbing a ledge when her hands pass near its top (falling, or near the top of a jump).
+    if (!this.onGround && this.vy >= -MOVE.grabRising && move !== 0 && this.hangCooldown <= 0 && this.state === 'normal') this.tryHang(move, level);
   }
 
   afterMove(dt, level) {
@@ -221,22 +224,40 @@ export class Player {
     this.events.push('walljump');
   }
 
+  /**
+   * Catches the top of a wall when her hands pass near it: from MOVE.grabAbove pixels above the top to MOVE.grabBelow
+   * below it. She's moved to hang from the edge, as long as there's room for her there.
+   */
   tryHang(d, level) {
     if (!touchingWall(this, level, d)) return;
     const tx = Math.floor((this.x + d * (this.w / 2 + 2)) / T);
     const handY = this.y - this.h + 6;
-    const ty = Math.floor(handY / T);
-    const below = handY - ty * T;
     const ptx = Math.floor(this.x / T);
-    if (below < 18 && level.isSolid(tx, ty) && !level.isSolid(tx, ty - 1) && !level.isSolid(ptx, ty - 1)) {
+    const first = Math.floor((handY - MOVE.grabBelow) / T), last = Math.floor((handY + MOVE.grabAbove) / T);
+    for (let ty = first; ty <= last; ty++) {
+      const below = handY - ty * T; // how far her hands are below the top of that block (negative: above it)
+      if (below < -MOVE.grabAbove || below >= MOVE.grabBelow) continue;
+      if (!level.isSolid(tx, ty) || level.isSolid(tx, ty - 1) || level.isSolid(ptx, ty - 1)) continue;
+      const y = ty * T + this.h - 6;
+      if (!this.roomAt(this.x, y, level)) continue;
       this.state = 'hang';
       this.hangDir = d;
+      this.hangHold = 0;
       this.facing = d;
-      this.y = ty * T + this.h - 6;
+      this.y = y;
       this.vx = 0;
       this.vy = 0;
       this.events.push('grab');
+      return;
     }
+  }
+
+  /** Nothing solid where her body would be with her feet at (x, y). */
+  roomAt(x, y, level) {
+    const l = Math.floor((x - this.w / 2) / T), r = Math.floor((x + this.w / 2 - 0.001) / T);
+    const t = Math.floor((y - this.h) / T), b = Math.floor((y - 0.01) / T);
+    for (let ty = t; ty <= b; ty++) for (let tx = l; tx <= r; tx++) if (level.isSolid(tx, ty)) return false;
+    return true;
   }
 
   /** Bounce off something stomped on. */

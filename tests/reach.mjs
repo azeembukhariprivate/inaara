@@ -1,11 +1,18 @@
 // Can every level be finished, and can every golden lotus be reached? This plays Inaara's real moves (the same
 // code the game uses) from every place she can stand: walking, short and long jumps, glides, spin dashes, wall
 // jumps and climbing ledges, and follows where each one lands.
+//
+// It plays as a careful player, not a perfect one: her jumps are a little lower than in the game, ledges are only
+// caught in a narrow band while falling, and each wall jump comes a moment after touching the wall. So nothing in a
+// level needs pixel-perfect timing; real hands always have some room to spare.
 import { Player } from '../src/player.js';
 import { T } from '../src/level.js';
-import { box, overlap } from '../src/physics.js';
+import { MOVE, box, overlap } from '../src/physics.js';
 
 const DT = 1 / 120;
+
+/** How much less than the game's own moves the careful player has. */
+export const CAREFUL = { jump: 0.95, wallJumpY: 0.95, grabAbove: 0, grabBelow: 16, grabRising: 0, wallReaction: 0.08 };
 
 function macros() {
   const list = [];
@@ -30,6 +37,7 @@ function macros() {
 function simulate(level, start, m, world, onTouch) {
   const p = new Player(start.x, start.y);
   p.onGround = true;
+  let wallTime = 0;
   let dir = m.dir, t = 0, jumpAt = m.run, holdUntil = m.run + m.hold, left = false, nextWallJump = 0;
   const maxTime = 6;
   while (t < maxTime) {
@@ -44,7 +52,9 @@ function simulate(level, start, m, world, onTouch) {
       input.up = true;
       input.jumpPressed = true;
     }
-    if (m.walls && !p.onGround && left && p.wallGrace > 0 && t >= nextWallJump) {
+    // A wall jump comes a moment after touching the wall (sliding down it meanwhile), not on the very first frame.
+    if (p.wallDir !== 0) wallTime += DT; else if (p.wallGrace <= 0) wallTime = 0;
+    if (m.walls && !p.onGround && left && p.wallGrace > 0 && t >= nextWallJump && wallTime >= CAREFUL.wallReaction) {
       // Jump off the wall and turn round, then keep pushing that way.
       const wallSide = p.wallDir || dir;
       dir = -wallSide;
@@ -55,6 +65,7 @@ function simulate(level, start, m, world, onTouch) {
       jumpAt = t;
       holdUntil = t + 0.35;
       nextWallJump = t + 0.2;
+      wallTime = 0;
     } else if (m.walls && t < holdUntil && t > jumpAt) input.jump = true;
     p.update(DT, input, level, world);
     p.events.length = 0;
@@ -70,8 +81,22 @@ function simulate(level, start, m, world, onTouch) {
   return p.onGround ? { x: p.x, y: p.y } : null;
 }
 
-/** Explores a level. Returns whether the gate was reached, which lotuses and how much jasmine could be reached. */
+/** Explores a level as the careful player. Returns whether the gate was reached, which lotuses and how much jasmine. */
 export function explore(level) {
+  const saved = { ...MOVE };
+  MOVE.jump *= CAREFUL.jump;
+  MOVE.wallJumpY *= CAREFUL.wallJumpY;
+  MOVE.grabAbove = CAREFUL.grabAbove;
+  MOVE.grabBelow = CAREFUL.grabBelow;
+  MOVE.grabRising = CAREFUL.grabRising;
+  try {
+    return exploreAs(level);
+  } finally {
+    Object.assign(MOVE, saved);
+  }
+}
+
+function exploreAs(level) {
   const platforms = level.entities.filter(e => e.type === 'log').map(e => ({ x: e.x0, y: e.y, w: e.x1 - e.x0 + e.w, h: e.h, dx: 0 }));
   const updrafts = level.entities.filter(e => e.type === 'updraft');
   const world = { platforms, updrafts };

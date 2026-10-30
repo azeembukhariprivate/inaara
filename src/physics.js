@@ -24,6 +24,12 @@ export const MOVE = {
   dash: 640,
   dashTime: 0.28,
   clipRecharge: 1.3,
+  // Grabbing a ledge: her hands catch a ledge top from this far above it to this far below it, also near the top of
+  // a jump (rising slower than grabRising); holding towards the wall for autoClimb seconds climbs up.
+  grabAbove: 30,
+  grabBelow: 30,
+  grabRising: 160,
+  autoClimb: 0.25,
   stomp: 620,
   stompHigh: 920,
   width: 30,

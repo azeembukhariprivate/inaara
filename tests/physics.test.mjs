@@ -87,3 +87,28 @@ test('getting hurt makes her blink, so a second hit straight away does nothing',
   assert.equal(p.hurt(6 * T), true);
   assert.equal(p.hurt(6 * T), false);
 });
+
+// A wall a little higher than her highest jump (like the big tower in the Backwaters): she catches the top and
+// climbs up with an ordinary jump, holding towards it, without perfect timing.
+test('a wall higher than a jump is climbed by catching its top, with an ordinary jump', () => {
+  // Walls four tiles high take an ordinary jump; five tiles (higher than any jump) take a firmly held one.
+  for (const [wallHeight, holds] of [[4, [0.2, 0.3, 0.5]], [5, [0.3, 0.5]]]) {
+    for (const hold of holds) {
+      for (const from of [5, 6, 7]) {
+        const level = flat(30, 12, set => {
+          for (let y = 11 - wallHeight; y < 11; y++) for (let x = 8; x < 12; x++) set(x, y, TILE.ROCK);
+        });
+        const p = new Player(from * T, 11 * T);
+        run(p, level, 0.1);
+        let onTop = false;
+        for (let i = 0; i < 240; i++) {
+          // Running at the wall with jump held for `hold` seconds, and keeping on towards it: nothing else pressed.
+          p.update(DT, { ...none, right: true, jump: i * DT < hold, jumpPressed: i === 0 }, level, {});
+          if (p.onGround && p.y === (11 - wallHeight) * T) onTop = true;
+        }
+        assert.ok(onTop, `a ${wallHeight}-tile wall, jump held ${hold}s from tile ${from}`);
+      }
+    }
+  }
+});
+
